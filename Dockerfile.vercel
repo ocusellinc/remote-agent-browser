@@ -1,0 +1,27 @@
+FROM node:24-slim
+
+# Use Debian's Chromium instead of `agent-browser install` (Chrome for
+# Testing), which has no Linux ARM64 builds — this keeps the image buildable
+# on both Vercel's amd64 builders and Apple Silicon for local dev.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        chromium \
+        fonts-liberation \
+        fonts-noto-color-emoji \
+        tini \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install -g agent-browser
+
+ENV AGENT_BROWSER_EXECUTABLE_PATH=/usr/bin/chromium
+# The container runs as root with no user namespace, so Chromium's sandbox
+# can't start; /dev/shm is also tiny in most container runtimes.
+ENV AGENT_BROWSER_ARGS="--no-sandbox,--disable-dev-shm-usage,--disable-gpu"
+ENV AGENT_BROWSER_DEFAULT_TIMEOUT=25000
+
+WORKDIR /app
+COPY server.mjs .
+
+# tini as PID 1 reaps zombie Chromium processes left by closed sessions
+ENTRYPOINT ["/usr/bin/tini", "--"]
+# Vercel routes traffic to $PORT (default 80)
+CMD ["node", "server.mjs"]
