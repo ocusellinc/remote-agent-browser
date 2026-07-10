@@ -80,12 +80,22 @@ const covered = new Set()
 // `verify(out, results)` asserts behavior; omit for exit-0-only checks.
 // `accepted: true` = only assert the server accepted the command — used where
 // success depends on the environment, with the reason in the name.
+// agent-browser commands that trigger a navigation (back, click on a link)
+// can race the page teardown they cause; over slow links this surfaces as a
+// transient CDP error. Batches are self-contained, so retry the whole batch
+// once.
+const TRANSIENT = /Inspected target navigated or closed|Execution context was destroyed/
+
 function defineCases(cases) {
   for (const spec of cases) {
     it(spec.name, async () => {
       const commands = typeof spec.cmds === 'function' ? spec.cmds() : spec.cmds
       for (const cmd of commands) covered.add(cmd.find((a) => !a.startsWith('-')))
-      const { results, out } = await run(commands)
+      let { results, out } = await run(commands)
+      const transient = (r) => !r.ok && TRANSIENT.test(r.stderr || r.stdout)
+      if (!spec.accepted && results.some(transient)) {
+        ;({ results, out } = await run(commands))
+      }
       if (!spec.accepted) {
         for (const r of results) assert.ok(r.ok, `${r.command} failed: ${(r.stderr || r.stdout).slice(0, 200)}`)
       }
@@ -299,11 +309,13 @@ describe('http-origin state', () => {
     {
       name: 'back / forward / reload',
       cmds: () => [
-        ['open', httpPage()], ['open', PAGE], ['back'], ['get', 'url'], ['forward'], ['get', 'title'], ['reload'],
+        ['open', httpPage()], ['open', PAGE], ['wait', '250'],
+        ['back'], ['wait', '250'], ['get', 'url'],
+        ['forward'], ['wait', '250'], ['get', 'title'], ['reload'],
       ],
       verify: (out) => {
-        assert.match(out[3], /healthz/)
-        assert.equal(out[5], 'TestPage')
+        assert.match(out[5], /healthz/)
+        assert.equal(out[8], 'TestPage')
       },
     },
     {
