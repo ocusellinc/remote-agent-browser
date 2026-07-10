@@ -1,0 +1,34 @@
+# Runs the e2e suite against each Vercel preview deployment.
+#
+# Vercel's git integration creates a GitHub deployment per commit and marks it
+# successful when the preview URL is live, which triggers this workflow — no
+# polling or "wait for deploy" step needed.
+#
+# Repo secrets:
+#   AUTH_TOKEN                        service bearer token, if the env sets one
+#   VERCEL_AUTOMATION_BYPASS_SECRET   Vercel > Project > Deployment Protection >
+#                                     Protection Bypass for Automation, if the
+#                                     preview is protected
+name: e2e
+
+on:
+  deployment_status:
+
+jobs:
+  preview:
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: e2e against the deployment
+        run: npm test
+        env:
+          BASE_URL: ${{ github.event.deployment_status.environment_url }}
+          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}

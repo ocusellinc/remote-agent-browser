@@ -342,6 +342,18 @@ const server = createServer(async (req, res) => {
       return sendJson(res, error.status ?? 400, { error: error.message })
     }
 
+    // Request log: endpoint, session, and the commands being run, so
+    // `vercel logs` shows what each caller asked the browser to do.
+    if (Array.isArray(body?.commands)) {
+      console.log(
+        `${req.url} session=${body.session ?? '(ephemeral)'} commands=${JSON.stringify(body.commands)}`,
+      )
+    } else {
+      console.log(
+        `${req.url} session=${body?.session ?? '(default)'}${typeof body?.url === 'string' ? ` url=${body.url}` : ''}`,
+      )
+    }
+
     const commandMatch = req.url.match(/^\/commands\/([a-z]+)$/)
     if (commandMatch) {
       return await handleCommand(commandMatch[1], body, res)

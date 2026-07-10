@@ -117,6 +117,19 @@ Each concurrent session launches its own browser, so memory is the scaling limit
 
 Vercel containers autoscale and scale to zero after 5 minutes without traffic (30 seconds on preview deployments), and consecutive requests are not guaranteed to hit the same instance. A warm instance *does* keep the daemon and open pages alive, so quick successive calls often share state — but don't rely on it. Put everything a task needs into a single `/run` batch.
 
+## Tests
+
+`tests/e2e.test.mjs` (built-in `node:test` runner, no dependencies) exercises every supported command end-to-end through the HTTP API — functional assertions for interactions (click changes the page, fill round-trips values, cookies persist), binary checks for screenshot/PDF magic bytes, session-isolation checks, and a coverage test that fails if any command from `GET /commands` is left unexercised.
+
+```bash
+npm test                                                 # builds & boots a local container itself
+BASE_URL=https://<deployment> AUTH_TOKEN=... npm test    # against a deployment
+```
+
+CI runs the same suite against every Vercel preview deployment: `.github/workflows/e2e.yml` triggers on the `deployment_status` event Vercel emits when a preview goes live and points `BASE_URL` at it. If the preview has Deployment Protection, set the `VERCEL_AUTOMATION_BYPASS_SECRET` repo secret (Project → Deployment Protection → Protection Bypass for Automation); set `AUTH_TOKEN` if the environment defines one.
+
+Environment caveats asserted as "accepted" rather than pass/fail: `record` needs ffmpeg, which the lean image omits (add `ffmpeg` to the apt install line for video capture); `react` commands need a React app opened with `--enable react-devtools`.
+
 ## Local development
 
 ```bash

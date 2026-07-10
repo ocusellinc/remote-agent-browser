@@ -102,7 +102,8 @@ Returns every supported command with a one-line description. Supported: `open re
 | Assert state | `["is", "visible", sel]`, `["is", "enabled", sel]`, `["is", "checked", sel]` → stdout `true`/`false` |
 | Wait | `["wait", sel]` (element) or `["wait", "2000"]` (ms) |
 | Debug a page | `["console"]`, `["errors"]`, `["network", "requests"]`, `["vitals"]` |
-| Run JS | `["eval", "document.title"]` → stdout is the result |
+| Run JS | `["eval", "document.title"]` → stdout is the result (strings come back JSON-quoted: `"foo"`) |
+| Read attribute | `["get", "attr", sel, name]` — selector before attribute name |
 | Emulate | `["set", "viewport", "390", "844"]`, `["set", "media", "dark"]` |
 
 Selectors: CSS (`input[name=email]`), refs from a same-request snapshot (`@e3`), or `find` semantic locators. Add `--json` to most commands for machine-readable stdout.
