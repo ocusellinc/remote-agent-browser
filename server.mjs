@@ -367,7 +367,7 @@ const server = createServer(async (req, res) => {
 })
 
 server.listen(PORT, () => {
-  console.log(`mini-remote-browser listening on :${PORT}`)
+  console.log(`remote-agent-browser listening on :${PORT}`)
 })
 
 // Vercel sends SIGTERM with a 30s grace period on scale-in

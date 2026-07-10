@@ -10,7 +10,10 @@ RUN apt-get update \
         fonts-noto-color-emoji \
         tini \
     && rm -rf /var/lib/apt/lists/* \
-    && npm install -g agent-browser
+    # agent-browser's postinstall selects the platform's native binary and
+    # patches the bin symlink; approve it so npm 12+'s install-scripts gate
+    # (warn-only in npm 11) doesn't skip it when the base image updates.
+    && npm install -g --allow-scripts=agent-browser agent-browser
 
 ENV AGENT_BROWSER_EXECUTABLE_PATH=/usr/bin/chromium
 # The container runs as root with no user namespace, so Chromium's sandbox

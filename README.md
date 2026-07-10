@@ -1,8 +1,8 @@
-# mini-remote-browser
+# remote-agent-browser
 
 A remote browser service: [agent-browser](https://github.com/vercel-labs/agent-browser) + Chromium wrapped in a tiny HTTP API, deployed on Vercel via a [Dockerfile](https://vercel.com/blog/dockerfile-on-vercel).
 
-> **Integrating this into an app or agent?** Use the agent-facing usage guide at [`skills/mini-remote-browser/SKILL.md`](./skills/mini-remote-browser/SKILL.md) — copy it into your agent's skills directory (e.g. `.claude/skills/mini-remote-browser/`) or paste it into a system prompt. It's self-contained: endpoints, request/response shapes, session semantics, recipes, and pitfalls.
+> **Integrating this into an app or agent?** Use the agent-facing usage guide at [`skills/remote-agent-browser/SKILL.md`](./skills/remote-agent-browser/SKILL.md) — copy it into your agent's skills directory (e.g. `.claude/skills/remote-agent-browser/`) or paste it into a system prompt. It's self-contained: endpoints, request/response shapes, session semantics, recipes, and pitfalls.
 
 ## Deploy
 
@@ -124,7 +124,7 @@ Vercel containers autoscale and scale to zero after 5 minutes without traffic (3
 vercel dev
 
 # Or plain Docker:
-docker build -f Dockerfile.vercel -t mini-remote-browser .
-docker run --rm -p 8080:8080 -e PORT=8080 mini-remote-browser
+docker build -f Dockerfile.vercel -t remote-agent-browser .
+docker run --rm -p 8080:8080 -e PORT=8080 remote-agent-browser
 curl -X POST localhost:8080/snapshot -H 'content-type: application/json' -d '{"url":"https://example.com"}'
 ```

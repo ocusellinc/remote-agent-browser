@@ -1,16 +1,16 @@
 ---
-name: mini-remote-browser
+name: remote-agent-browser
 description: Drive a real remote Chromium browser over plain HTTP to load, inspect, interact with, and screenshot any URL — no Playwright, CDP, or local browser needed. Use when you need to verify a deployed page works (preview deployments, sandboxes), read rendered content from a live site, automate form interactions, capture screenshots/PDFs, or collect console errors and Core Web Vitals from a real browser.
 ---
 
-# mini-remote-browser
+# remote-agent-browser
 
 A hosted browser-automation API. Each request runs [agent-browser](https://github.com/vercel-labs/agent-browser) commands against an isolated Chromium session and returns the results as JSON (or raw image/PDF bytes).
 
 ## Setup
 
-- **Base URL**: the service deployment, e.g. `https://mini-remote-browser.vercel.app` (ask the user for theirs, or read `MINI_REMOTE_BROWSER_URL` from the environment).
-- **Auth**: if the deployment sets `AUTH_TOKEN`, send `Authorization: Bearer <token>` on every request (read it from `MINI_REMOTE_BROWSER_TOKEN` or ask). `GET /healthz` never needs auth.
+- **Base URL**: the service deployment, e.g. `https://remote-agent-browser.vercel.app` (ask the user for theirs, or read `REMOTE_AGENT_BROWSER_URL` from the environment).
+- **Auth**: if the deployment sets `AUTH_TOKEN`, send `Authorization: Bearer <token>` on every request (read it from `REMOTE_AGENT_BROWSER_TOKEN` or ask). `GET /healthz` never needs auth.
 - All request bodies are JSON: `content-type: application/json`.
 
 ## The one rule that matters
@@ -154,8 +154,8 @@ Pass criteria: every `ok: true`, `errors` stdout empty, title is not an error pa
 ## Integration snippet (JS)
 
 ```js
-const BASE = process.env.MINI_REMOTE_BROWSER_URL
-const TOKEN = process.env.MINI_REMOTE_BROWSER_TOKEN
+const BASE = process.env.REMOTE_AGENT_BROWSER_URL
+const TOKEN = process.env.REMOTE_AGENT_BROWSER_TOKEN
 
 async function browse(commands, opts = {}) {
   const res = await fetch(`${BASE}/run`, {
