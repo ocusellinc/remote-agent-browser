@@ -4,15 +4,17 @@
 //   npm test                                  # boots a local Docker container
 //   BASE_URL=https://<deployment> npm test    # tests a deployment
 //
-// Env: AUTH_TOKEN (service bearer token), VERCEL_AUTOMATION_BYPASS_SECRET
-// (to get through Vercel Deployment Protection on preview URLs).
+// Env: AUTH_TOKEN (service bearer token, if the deployment sets one) and/or
+// VERCEL_TRUSTED_OIDC_TOKEN (for deployments behind Deployment Protection
+// with Trusted Sources: an OIDC token from a trusted issuer, e.g. GitHub
+// Actions' id-token).
 
 import { describe, it, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 
 const TOKEN = process.env.AUTH_TOKEN
-const BYPASS = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+const OIDC = process.env.VERCEL_TRUSTED_OIDC_TOKEN
 const MANAGED = !process.env.BASE_URL
 const CONTAINER = 'remote-agent-browser-e2e'
 // Host port == container port, so the in-container browser can reach
@@ -51,7 +53,7 @@ after(() => {
 const headers = () => ({
   'content-type': 'application/json',
   ...(TOKEN && { authorization: `Bearer ${TOKEN}` }),
-  ...(BYPASS && { 'x-vercel-protection-bypass': BYPASS }),
+  ...(OIDC && { 'x-vercel-trusted-oidc-idp-token': OIDC }),
 })
 
 async function post(path, body) {

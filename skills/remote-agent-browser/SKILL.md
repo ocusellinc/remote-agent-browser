@@ -11,6 +11,7 @@ A hosted browser-automation API. Each request runs [agent-browser](https://githu
 
 - **Base URL**: the service deployment, e.g. `https://remote-agent-browser.vercel.app` (ask the user for theirs, or read `REMOTE_AGENT_BROWSER_URL` from the environment).
 - **Auth**: if the deployment sets `AUTH_TOKEN`, send `Authorization: Bearer <token>` on every request (read it from `REMOTE_AGENT_BROWSER_TOKEN` or ask). `GET /healthz` never needs auth.
+- **Trusted Sources deployments**: if the service sits behind Vercel Deployment Protection with Trusted Sources, also send `x-vercel-trusted-oidc-idp-token: <token>` — from a Vercel function use `await getVercelOidcToken()` (`@vercel/oidc`); a 401/SSO-redirect HTML response instead of JSON means this header is missing or the caller isn't on the allowlist.
 - All request bodies are JSON: `content-type: application/json`.
 
 ## The one rule that matters
