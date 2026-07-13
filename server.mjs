@@ -135,12 +135,6 @@ function sendJson(res, status, data) {
   res.end(body)
 }
 
-function authorized(req) {
-  const token = process.env.AUTH_TOKEN
-  if (!token) return true
-  return req.headers.authorization === `Bearer ${token}`
-}
-
 function isStringArray(value) {
   return Array.isArray(value) && value.every((item) => typeof item === 'string')
 }
@@ -324,9 +318,6 @@ const server = createServer(async (req, res) => {
   try {
     if (req.method === 'GET' && req.url === '/healthz') {
       return sendJson(res, 200, { ok: true })
-    }
-    if (!authorized(req)) {
-      return sendJson(res, 401, { error: 'Unauthorized' })
     }
     if (req.method === 'GET' && req.url === '/commands') {
       return sendJson(res, 200, { commands: COMMANDS })

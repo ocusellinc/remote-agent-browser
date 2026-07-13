@@ -12,7 +12,7 @@ vercel deploy
 
 That's it — Vercel detects `Dockerfile.vercel`, builds the image, pushes it to Vercel Container Registry, and routes all traffic to the container.
 
-Lock the deployment down before sharing the URL — the service will browse arbitrary URLs and run arbitrary page JavaScript on behalf of callers. Preferred: Deployment Protection + Trusted Sources (below). Fallback for setups without those (Hobby plan, non-Vercel hosts): set an `AUTH_TOKEN` environment variable and have clients send `Authorization: Bearer <token>`.
+Lock the deployment down before sharing the URL — the service will browse arbitrary URLs and run arbitrary page JavaScript on behalf of callers. Enable Deployment Protection and allowlist callers with Trusted Sources (below).
 
 ### Locking access to specific callers (Trusted Sources)
 
@@ -21,7 +21,7 @@ To restrict the service to specific workloads instead of anyone holding a static
 - **Another Vercel project** (e.g. an app calling this service): add it under **Trusted Sources → Vercel Projects** (same team) or **External Services → Vercel OIDC (external team)** (`owner_id` + `project_id`). The caller forwards `await getVercelOidcToken()` from `@vercel/oidc` on each request.
 - **CI**: add GitHub Actions as an External Service scoped to this repository; `.github/workflows/e2e.yml` already mints the id-token and the test suite sends it automatically.
 
-With Trusted Sources on, `AUTH_TOKEN` is redundant — leave it unset. The app-level check exists for deployments that can't use Deployment Protection.
+The service itself does no authentication — access control is entirely this platform layer, enforced before requests reach the container.
 
 ## API
 
@@ -97,7 +97,7 @@ curl -X POST https://<deployment>/screenshot \
 
 ### `GET /healthz`
 
-Liveness check (never requires auth).
+Liveness check.
 
 ## How it works
 
@@ -133,7 +133,7 @@ Vercel containers autoscale and scale to zero after 5 minutes without traffic (3
 ```bash
 npm test                                                 # builds & boots a local container itself
 BASE_URL=https://<deployment> npm test                   # against a deployment
-# add AUTH_TOKEN=... and/or VERCEL_TRUSTED_OIDC_TOKEN=... if the deployment requires them
+# add VERCEL_TRUSTED_OIDC_TOKEN=... if the deployment is behind Deployment Protection
 ```
 
 CI runs the same suite against every Vercel preview deployment: `.github/workflows/e2e.yml` triggers on the `deployment_status` event Vercel emits when a preview goes live and points `BASE_URL` at it. Protected previews are handled by Trusted Sources — the job mints a GitHub OIDC id-token, no secret needed (add GitHub Actions as a Trusted Source on the project, scoped to this repo).

@@ -10,7 +10,6 @@ A hosted browser-automation API. Each request runs [agent-browser](https://githu
 ## Setup
 
 - **Base URL**: the service deployment, e.g. `https://remote-agent-browser.vercel.app` (ask the user for theirs, or read `REMOTE_AGENT_BROWSER_URL` from the environment).
-- **Auth**: if the deployment sets `AUTH_TOKEN`, send `Authorization: Bearer <token>` on every request (read it from `REMOTE_AGENT_BROWSER_TOKEN` or ask). `GET /healthz` never needs auth.
 - **Trusted Sources deployments**: if the service sits behind Vercel Deployment Protection with Trusted Sources, also send `x-vercel-trusted-oidc-idp-token: <token>` — from a Vercel function use `await getVercelOidcToken()` (`@vercel/oidc`); a 401/SSO-redirect HTML response instead of JSON means this header is missing or the caller isn't on the allowlist.
 - All request bodies are JSON: `content-type: application/json`.
 
@@ -148,7 +147,7 @@ Pass criteria: every `ok: true`, `errors` stdout empty, title is not an error pa
 
 ## Errors, timing, limits
 
-- `401` missing/wrong bearer token · `400` malformed body or unsupported command · `422` a browser command failed (inspect `results`) · `500` service error.
+- `401`/SSO-redirect HTML: blocked by Deployment Protection — missing or unauthorized `x-vercel-trusted-oidc-idp-token` · `400` malformed body or unsupported command · `422` a browser command failed (inspect `results`) · `500` service error.
 - Cold start: first request after ~5 idle minutes takes a few seconds extra (instance boot + Chromium launch). Retry once on timeout before concluding the target is broken.
 - Per-command timeout 60s; page-action default timeout 25s; request bodies max 1MB. Very large snapshots are capped at 32MB.
 - The browser exits with the request (ephemeral sessions) — nothing to clean up.
@@ -157,15 +156,11 @@ Pass criteria: every `ok: true`, `errors` stdout empty, title is not an error pa
 
 ```js
 const BASE = process.env.REMOTE_AGENT_BROWSER_URL
-const TOKEN = process.env.REMOTE_AGENT_BROWSER_TOKEN
 
 async function browse(commands, opts = {}) {
   const res = await fetch(`${BASE}/run`, {
     method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      ...(TOKEN && { authorization: `Bearer ${TOKEN}` }),
-    },
+    headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ commands, ...opts }),
   })
   const { results } = await res.json()
