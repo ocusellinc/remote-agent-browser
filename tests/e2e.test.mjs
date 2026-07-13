@@ -35,13 +35,16 @@ before(async () => {
     ])
     BASE = `http://127.0.0.1:${LOCAL_PORT}`
   }
+  // Plain fetch follows Deployment Protection's SSO redirect to a 200 login
+  // page, so require the service's actual JSON, not just a 200.
   for (let i = 0; i < 60; i++) {
     try {
-      if ((await fetch(`${BASE}/healthz`)).ok) return
+      const res = await fetch(`${BASE}/healthz`, { headers: headers(), redirect: 'manual' })
+      if (res.ok && (res.headers.get('content-type') ?? '').includes('application/json')) return
     } catch {}
     await new Promise((resolve) => setTimeout(resolve, 1000))
   }
-  throw new Error(`service at ${BASE} did not become healthy`)
+  throw new Error(`service at ${BASE} did not become healthy (protected without a valid token?)`)
 })
 
 after(() => {
@@ -135,8 +138,9 @@ const httpPage = () => `${BASE}/healthz`
 
 describe('server endpoints', () => {
   it('GET /healthz', async () => {
-    const res = await fetch(`${BASE}/healthz`)
+    const res = await fetch(`${BASE}/healthz`, { headers: headers(), redirect: 'manual' })
     assert.equal(res.status, 200)
+    assert.deepEqual(await res.json(), { ok: true })
   })
   it('GET /commands lists the surface', async () => {
     const res = await fetch(`${BASE}/commands`, { headers: headers() })

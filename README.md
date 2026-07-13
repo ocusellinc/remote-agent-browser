@@ -12,7 +12,7 @@ vercel deploy
 
 That's it — Vercel detects `Dockerfile.vercel`, builds the image, pushes it to Vercel Container Registry, and routes all traffic to the container.
 
-To require auth, set an `AUTH_TOKEN` environment variable in the project settings; clients must then send `Authorization: Bearer <token>`. Recommended, since the service will browse arbitrary URLs on behalf of callers.
+Lock the deployment down before sharing the URL — the service will browse arbitrary URLs and run arbitrary page JavaScript on behalf of callers. Preferred: Deployment Protection + Trusted Sources (below). Fallback for setups without those (Hobby plan, non-Vercel hosts): set an `AUTH_TOKEN` environment variable and have clients send `Authorization: Bearer <token>`.
 
 ### Locking access to specific callers (Trusted Sources)
 
@@ -21,7 +21,7 @@ To restrict the service to specific workloads instead of anyone holding a static
 - **Another Vercel project** (e.g. an app calling this service): add it under **Trusted Sources → Vercel Projects** (same team) or **External Services → Vercel OIDC (external team)** (`owner_id` + `project_id`). The caller forwards `await getVercelOidcToken()` from `@vercel/oidc` on each request.
 - **CI**: add GitHub Actions as an External Service scoped to this repository; `.github/workflows/e2e.yml` already mints the id-token and the test suite sends it automatically.
 
-`AUTH_TOKEN` can stay as a second, app-level layer or be dropped once Trusted Sources is on.
+With Trusted Sources on, `AUTH_TOKEN` is redundant — leave it unset. The app-level check exists for deployments that can't use Deployment Protection.
 
 ## API
 
@@ -132,10 +132,11 @@ Vercel containers autoscale and scale to zero after 5 minutes without traffic (3
 
 ```bash
 npm test                                                 # builds & boots a local container itself
-BASE_URL=https://<deployment> AUTH_TOKEN=... npm test    # against a deployment
+BASE_URL=https://<deployment> npm test                   # against a deployment
+# add AUTH_TOKEN=... and/or VERCEL_TRUSTED_OIDC_TOKEN=... if the deployment requires them
 ```
 
-CI runs the same suite against every Vercel preview deployment: `.github/workflows/e2e.yml` triggers on the `deployment_status` event Vercel emits when a preview goes live and points `BASE_URL` at it. Protected previews are handled by Trusted Sources — the job mints a GitHub OIDC id-token, no secret needed (add GitHub Actions as a Trusted Source on the project, scoped to this repo). Set the `AUTH_TOKEN` repo secret only if the environment defines one.
+CI runs the same suite against every Vercel preview deployment: `.github/workflows/e2e.yml` triggers on the `deployment_status` event Vercel emits when a preview goes live and points `BASE_URL` at it. Protected previews are handled by Trusted Sources — the job mints a GitHub OIDC id-token, no secret needed (add GitHub Actions as a Trusted Source on the project, scoped to this repo).
 
 Environment caveats asserted as "accepted" rather than pass/fail: `record` needs ffmpeg, which the lean image omits (add `ffmpeg` to the apt install line for video capture); `react` commands need a React app opened with `--enable react-devtools`.
 

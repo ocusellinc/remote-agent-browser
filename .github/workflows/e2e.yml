@@ -9,8 +9,6 @@
 # to pass, add GitHub Actions as a Trusted Source on the Vercel project
 # (Settings > Deployment Protection > Trusted Sources > External Services,
 # scoped to this repository). No secrets involved.
-#
-# Set the AUTH_TOKEN repo secret only if the environment defines one.
 name: e2e
 
 on:
@@ -44,5 +42,4 @@ jobs:
         run: npm test
         env:
           BASE_URL: ${{ github.event.deployment_status.environment_url }}
-          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
           VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
