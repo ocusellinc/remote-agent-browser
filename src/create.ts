@@ -1,8 +1,8 @@
 import { createBrowserClient } from './browser.js'
 import { provisionBrowserSandbox, type SandboxFactory } from './vercel.js'
-import type { RemoteBrowser } from './types.js'
+import type { AgentBrowser } from './types.js'
 
-export type CreateRemoteBrowserOptions = {
+export type CreateAgentBrowserOptions = {
   /** Named CLI session; state (page, cookies, refs) persists across calls. */
   session?: string
   /**
@@ -21,7 +21,7 @@ export type CreateRemoteBrowserOptions = {
 }
 
 /**
- * Create a remote browser running inside a fresh Vercel Sandbox.
+ * Create an agent-browser client running inside a fresh Vercel Sandbox.
  *
  * The sandbox boots from a browser-ready VCR image and the returned client
  * runs every command as
@@ -32,9 +32,9 @@ export type CreateRemoteBrowserOptions = {
  * `vercel login`), via @vercel/sandbox.
  *
  * ```ts
- * import { createRemoteBrowser } from 'remote-agent-browser'
+ * import { createAgentBrowser } from 'remote-agent-browser'
  *
- * const browser = await createRemoteBrowser()
+ * const browser = await createAgentBrowser()
  * const { results } = await browser.run([
  *   ['open', 'https://example.com'],
  *   ['snapshot', '-i', '--json'],
@@ -42,9 +42,9 @@ export type CreateRemoteBrowserOptions = {
  * await browser.close()
  * ```
  */
-export async function createRemoteBrowser(
-  opts: CreateRemoteBrowserOptions = {},
-): Promise<RemoteBrowser> {
+export async function createAgentBrowser(
+  opts: CreateAgentBrowserOptions = {},
+): Promise<AgentBrowser> {
   const runner = await provisionBrowserSandbox({
     sandbox: opts.sandbox,
     image: opts.image,

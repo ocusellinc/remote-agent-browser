@@ -4,7 +4,7 @@ import type {
   BrowserRunResult,
   CommandRunner,
   ExecOptions,
-  RemoteBrowser,
+  AgentBrowser,
   RunOptions,
 } from './types.js'
 
@@ -54,7 +54,7 @@ function withSession(session: string, args: string[]): string[] {
 export function createBrowserClient(
   runner: CommandRunner,
   opts: { session?: string; ownsRunner?: boolean } = {},
-): RemoteBrowser {
+): AgentBrowser {
   const session = opts.session ?? `session-${randomUUID()}`
   if (!SESSION_NAME.test(session)) {
     throw new Error(`session must match [A-Za-z0-9_.-]{1,64}, got "${session}"`)
@@ -63,7 +63,7 @@ export function createBrowserClient(
   let closed = false
 
   function assertOpen() {
-    if (closed) throw new Error('RemoteBrowser is closed')
+    if (closed) throw new Error('AgentBrowser is closed')
   }
 
   async function execCommand(

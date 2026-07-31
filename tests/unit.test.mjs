@@ -4,6 +4,7 @@ import { describe, it, mock } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { createBrowserClient, flagsToArgs } from '../src/browser.ts'
+import { createAgentBrowser } from '../dist/index.js'
 import {
   DEFAULT_BROWSER_IMAGE,
   provisionBrowserSandbox,
@@ -32,6 +33,38 @@ function makeSandbox(handler) {
     },
   }
 }
+
+// --- public factory ---------------------------------------------------------
+
+describe('createAgentBrowser', () => {
+  it('creates a session client from the requested image and owns its sandbox', async () => {
+    const sandbox = makeSandbox()
+    const factory = { create: mock.fn(async () => sandbox) }
+
+    const browser = await createAgentBrowser({
+      sandbox: factory,
+      image: 'remote-agent-browser:v1',
+      session: 'agent-session',
+    })
+
+    assert.equal(browser.session, 'agent-session')
+    assert.equal(
+      factory.create.mock.calls[0].arguments[0].image,
+      'remote-agent-browser:v1',
+    )
+
+    await browser.exec('open', { args: ['https://example.com'] })
+    assert.deepEqual(sandbox.calls[0].args, [
+      '--session',
+      'agent-session',
+      'open',
+      'https://example.com',
+    ])
+
+    await browser.close()
+    assert.equal(sandbox.stop.mock.calls.length, 1)
+  })
+})
 
 // --- flagsToArgs ------------------------------------------------------------
 

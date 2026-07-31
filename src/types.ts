@@ -2,10 +2,10 @@
  * Shared types for remote-agent-browser.
  *
  * The library has two layers:
- *  - `RemoteBrowser` (browser.ts): a thin, session-oriented client over the
+ *  - `AgentBrowser` (browser.ts): a thin, session-oriented client over the
  *    `agent-browser` CLI running somewhere that can execute commands.
- *  - `createRemoteBrowser` (vercel.ts): provisions a Vercel Sandbox with
- *    agent-browser + Chromium and returns a `RemoteBrowser` backed by it.
+ *  - `createAgentBrowser` (create.ts): provisions a Vercel Sandbox from a
+ *    browser-ready image and returns an `AgentBrowser` backed by it.
  */
 
 /** One agent-browser CLI invocation result. */
@@ -48,7 +48,7 @@ export type ExecOptions = {
 /**
  * Minimal command executor the browser client needs. Implemented by the
  * Vercel Sandbox adapter; anything with the same shape can back a
- * RemoteBrowser (tests, a local shell, another sandbox provider).
+ * AgentBrowser (tests, a local shell, another sandbox provider).
  */
 export interface CommandRunner {
   /** Run a command, waiting for completion. */
@@ -64,7 +64,7 @@ export interface CommandRunner {
 }
 
 /** Session-oriented remote browser client. */
-export interface RemoteBrowser {
+export interface AgentBrowser {
   /** The runner's session name this client uses by default. */
   readonly session: string
   /** Run a batch of agent-browser arg-arrays sequentially. */

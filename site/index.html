@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Run agent-browser in an isolated Vercel Sandbox with Chromium ready to use."
+    />
+    <title>remote-agent-browser</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="masthead">
+        <p class="wordmark">
+          REMOTE AGENT BROWSER <span class="cursor" aria-hidden="true"></span>
+        </p>
+        <p>BROWSER INFRASTRUCTURE</p>
+        <p>2026</p>
+      </header>
+
+      <section class="intro" aria-labelledby="about">
+        <h1 id="about"># A BROWSER FOR AGENTS</h1>
+        <p>
+          Run <a href="https://github.com/vercel-labs/agent-browser">agent-browser</a>
+          in an isolated Vercel Sandbox. Chromium and the CLI are already inside
+          the container image, so every browser starts from the same clean environment.
+        </p>
+      </section>
+
+      <section aria-labelledby="install">
+        <h2 id="install">## INSTALL</h2>
+        <pre><code>npm install remote-agent-browser @vercel/sandbox</code></pre>
+      </section>
+
+      <section aria-labelledby="usage">
+        <h2 id="usage">## BASIC USAGE</h2>
+        <pre><code><span class="token-keyword">import</span> { createAgentBrowser } <span class="token-keyword">from</span> <span class="token-string">'remote-agent-browser'</span>
+
+<span class="token-keyword">const</span> browser = <span class="token-keyword">await</span> createAgentBrowser()
+
+<span class="token-keyword">try</span> {
+  <span class="token-keyword">const</span> { results } = <span class="token-keyword">await</span> browser.run([
+    [<span class="token-string">'open'</span>, <span class="token-string">'https://example.com'</span>],
+    [<span class="token-string">'snapshot'</span>, <span class="token-string">'-i'</span>, <span class="token-string">'--json'</span>],
+  ])
+
+  console.log(results[<span class="token-number">1</span>].stdout)
+} <span class="token-keyword">finally</span> {
+  <span class="token-keyword">await</span> browser.close()
+}</code></pre>
+        <p class="note">
+          Authentication is provided by <code>VERCEL_OIDC_TOKEN</code>. On Vercel it is
+          available automatically; locally, pull it from a linked project.
+        </p>
+      </section>
+
+      <section aria-labelledby="commands">
+        <h2 id="commands">## COMMANDS</h2>
+        <dl class="api-list">
+          <div>
+            <dt><code>browser.run(commands)</code></dt>
+            <dd>Run several agent-browser commands in one session.</dd>
+          </div>
+          <div>
+            <dt><code>browser.exec(command)</code></dt>
+            <dd>Run one command with arguments and flags.</dd>
+          </div>
+          <div>
+            <dt><code>browser.snapshot(url)</code></dt>
+            <dd>Open a page and return its interactive JSON snapshot.</dd>
+          </div>
+          <div>
+            <dt><code>browser.screenshot(url)</code></dt>
+            <dd>Open a page and return a PNG buffer.</dd>
+          </div>
+          <div>
+            <dt><code>browser.close()</code></dt>
+            <dd>Close the session and stop the Sandbox.</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section aria-labelledby="image">
+        <h2 id="image">## CONTAINER IMAGE</h2>
+        <p>
+          The default is <code>remote-agent-browser:latest</code>. Use an immutable tag
+          or digest in production.
+        </p>
+        <pre><code><span class="token-keyword">const</span> browser = <span class="token-keyword">await</span> createAgentBrowser({
+  image: <span class="token-string">'remote-agent-browser:v1'</span>,
+})</code></pre>
+      </section>
+
+      <section aria-labelledby="links">
+        <h2 id="links">## LINKS</h2>
+        <nav aria-label="Project links">
+          <a href="https://github.com/vercel-labs/remote-agent-browser">GITHUB</a>
+          <span aria-hidden="true"> / </span>
+          <a href="https://github.com/vercel-labs/remote-agent-browser#readme">FULL DOCUMENTATION</a>
+        </nav>
+      </section>
+
+      <footer>
+        <p>VERCEL LABS / MIT LICENSE</p>
+      </footer>
+    </main>
+  </body>
+</html>

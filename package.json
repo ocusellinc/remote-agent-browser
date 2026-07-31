@@ -18,16 +18,13 @@
     "build": "tsc -p tsconfig.json",
     "prepack": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start": "node server.mjs",
-    "test": "node --test tests/*.test.mjs",
-    "test:e2e": "node --test tests/e2e.test.mjs",
-    "test:unit": "node --test tests/unit.test.mjs"
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "test:integration": "npm run build && node --test tests/integration.test.mjs",
+    "test:unit": "npm run build && node --test tests/unit.test.mjs"
   },
   "files": [
     "dist",
-    "Dockerfile.sandbox",
-    "server.mjs",
-    "Dockerfile.vercel"
+    "Dockerfile.sandbox"
   ],
   "dependencies": {
     "@vercel/sandbox": ">=2.9.0"

@@ -3,9 +3,9 @@
 Run [agent-browser](https://github.com/vercel-labs/agent-browser) in an isolated [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox). Chromium and the CLI are built once into a Docker image, pushed to Vercel Container Registry (VCR), and used as the root filesystem for every browser Sandbox.
 
 ```ts
-import { createRemoteBrowser } from 'remote-agent-browser'
+import { createAgentBrowser } from 'remote-agent-browser'
 
-const browser = await createRemoteBrowser()
+const browser = await createAgentBrowser()
 try {
   const { results } = await browser.run([
     ['open', 'https://example.com'],
@@ -42,7 +42,7 @@ docker buildx build \
 The default API image is `remote-agent-browser:latest` in the Sandbox project's registry. Either push that tag, set `REMOTE_AGENT_BROWSER_IMAGE`, or pass `image` explicitly:
 
 ```ts
-const browser = await createRemoteBrowser({
+const browser = await createAgentBrowser({
   image: 'remote-agent-browser:v1',
 })
 ```
@@ -50,7 +50,7 @@ const browser = await createRemoteBrowser({
 A full VCR URL and an immutable digest also work:
 
 ```ts
-await createRemoteBrowser({
+await createAgentBrowser({
   image: 'vcr.vercel.com/<team>/<project>/remote-agent-browser@sha256:<digest>',
 })
 ```
@@ -67,7 +67,7 @@ npm install remote-agent-browser @vercel/sandbox
 
 ## API
 
-### `createRemoteBrowser(options?)`
+### `createAgentBrowser(options?)`
 
 Creates one non-persistent Sandbox from the uploaded image. Non-persistent is intentional: each browser is disposable and `close()` should not create billable filesystem snapshots.
 
@@ -115,11 +115,10 @@ await browser.exec('find', {
 
 ## Bring your own runner
 
-`createBrowserClient(runner)` provides the same session-oriented API over anything implementing `CommandRunner`. `provisionBrowserSandbox()` accepts an injected `SandboxFactory` for unit tests.
-
-## Optional hosted HTTP service
-
-The older HTTP-service form remains available in [Dockerfile.vercel](./Dockerfile.vercel) and [server.mjs](./server.mjs). It is separate from the recommended library flow above: that container receives HTTP requests itself, while `Dockerfile.sandbox` is an image used to create a fresh isolated Sandbox per browser.
+`createBrowserClient(runner)` provides the same session-oriented API over
+anything implementing `CommandRunner`. Provider-specific primitives such as
+`provisionBrowserSandbox`, `SandboxRunner`, and `SandboxFactory` are available
+from `remote-agent-browser/vercel`.
 
 ## Tests
 
@@ -129,4 +128,10 @@ npm run test:unit
 npm test
 ```
 
-The full test command also builds and runs the optional HTTP service with local Docker.
+The default suite skips the billable Vercel integration tests. To boot the
+published image in a real Sandbox and exercise Chromium end to end:
+
+```bash
+set -a; source .env.local; set +a
+RUN_INTEGRATION=1 npm run test:integration
+```
