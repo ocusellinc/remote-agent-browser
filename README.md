@@ -18,8 +18,8 @@ references. `close()` closes Chromium and stops the Sandbox.
 
 ## Examples
 
-- [Basic browser session](./examples/basic.mjs) — open a page and take an
-  interactive snapshot.
+- [Capture a screenshot](./examples/screenshot/README.md) — capture a full-page
+  PNG and save it locally.
 - [Agent Bash tool integration](./examples/agent-bash-tool/README.md) — let an
   agent use normal `agent-browser <command>` invocations through its Bash tool.
 
@@ -33,7 +33,7 @@ For local development, link a Vercel project and pull its environment:
 ```bash
 vercel link
 vercel env pull .env.local
-node --env-file=.env.local examples/basic.mjs
+node --env-file=.env.local examples/screenshot/index.mjs
 ```
 
 ## API
