@@ -3,7 +3,14 @@
   "version": "0.2.0",
   "description": "Run agent-browser in a Vercel Sandbox created from a browser-ready container image",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vercel-labs/remote-agent-browser.git"
+  },
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

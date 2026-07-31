@@ -60,7 +60,7 @@ VCR builds an optimized Sandbox image after a push. No npm, system-package, or b
 ## 2. Install and authenticate
 
 ```bash
-npm install remote-agent-browser @vercel/sandbox
+npm install remote-agent-browser
 ```
 
 `@vercel/sandbox` reads credentials from the environment. On Vercel this is normally `VERCEL_OIDC_TOKEN`; locally, use a linked project and `vercel env pull .env.local`.
