@@ -1,103 +1,74 @@
 # remote-agent-browser
 
-Run [agent-browser](https://github.com/vercel-labs/agent-browser) in an isolated [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox). Chromium and the CLI are built once into a Docker image, pushed to Vercel Container Registry (VCR), and used as the root filesystem for every browser Sandbox.
+Run [agent-browser](https://github.com/vercel-labs/agent-browser) in an isolated
+[Vercel Sandbox](https://vercel.com/docs/vercel-sandbox). Chromium and the CLI
+come preinstalled, so there is no browser or Docker setup at runtime.
+
+## Install
+
+```bash
+pnpm add remote-agent-browser
+```
+
+## Use
 
 ```ts
 import { createAgentBrowser } from 'remote-agent-browser'
 
 const browser = await createAgentBrowser()
+
 try {
   const { results } = await browser.run([
     ['open', 'https://example.com'],
     ['snapshot', '-i', '--json'],
   ])
+
   console.log(results[1].stdout)
 } finally {
   await browser.close()
 }
 ```
 
-## 1. Build and upload the image
+`createAgentBrowser()` starts a fresh Vercel Sandbox from the prebuilt browser
+image. Commands in one client share the same page, cookies, tabs, and element
+references. `close()` closes Chromium and stops the Sandbox.
 
-VCR images are scoped to a Vercel project. Link this repository to the project and get a current registry credential:
+## Authentication
+
+Authentication is automatic when running on Vercel through
+`VERCEL_OIDC_TOKEN`.
+
+For local development, link a Vercel project and pull its environment:
 
 ```bash
 vercel link
 vercel env pull .env.local
-set -a; source .env.local; set +a
-printf '%s' "$VERCEL_OIDC_TOKEN" | docker login vcr.vercel.com \
-  --username oidc --password-stdin
+node --env-file=.env.local example.mjs
 ```
-
-Then build and push `Dockerfile.sandbox`. Replace the team and project slugs and use an immutable version or commit tag in production:
-
-```bash
-docker buildx build \
-  -f Dockerfile.sandbox \
-  --platform linux/amd64,linux/arm64 \
-  --output "type=image,name=vcr.vercel.com/<team>/<project>/remote-agent-browser:v1,push=true,oci-mediatypes=true,compression=zstd,compression-level=3,force-compression=true" \
-  .
-```
-
-The default API image is `remote-agent-browser:latest` in the Sandbox project's registry. Either push that tag, set `REMOTE_AGENT_BROWSER_IMAGE`, or pass `image` explicitly:
-
-```ts
-const browser = await createAgentBrowser({
-  image: 'remote-agent-browser:v1',
-})
-```
-
-A full VCR URL and an immutable digest also work:
-
-```ts
-await createAgentBrowser({
-  image: 'vcr.vercel.com/<team>/<project>/remote-agent-browser@sha256:<digest>',
-})
-```
-
-VCR builds an optimized Sandbox image after a push. No npm, system-package, or browser installation happens while serving a request.
-
-## 2. Install and authenticate
-
-```bash
-pnpm add remote-agent-browser
-```
-
-`@vercel/sandbox` reads credentials from the environment. On Vercel this is normally `VERCEL_OIDC_TOKEN`; locally, use a linked project and `vercel env pull .env.local`.
 
 ## API
 
-### `createAgentBrowser(options?)`
+### `createAgentBrowser()`
 
-Creates one non-persistent Sandbox from the uploaded image. Non-persistent is intentional: each browser is disposable and `close()` should not create billable filesystem snapshots.
+Starts a fresh browser in a disposable Vercel Sandbox. Always call
+`browser.close()` when finished.
 
-| option | default | notes |
-| --- | --- | --- |
-| `image` | `REMOTE_AGENT_BROWSER_IMAGE` or `remote-agent-browser:latest` | VCR repository, tag, digest, or full URL |
-| `session` | random | agent-browser session name |
-| `timeoutMs` | 10 minutes | Sandbox wall-clock timeout |
-| `vcpus` | `2` | 4 GB RAM; enough for one Chromium browser |
-| `env` | — | Extra environment variables passed to Sandbox commands |
-| `sandbox` | `@vercel/sandbox` | Injectable factory for tests or compatible providers |
+### `browser.run(commands)`
 
-### `browser.run(commands, options?)`
-
-Runs arrays of agent-browser CLI arguments in order and in the same browser session. It stops at the first error unless `stopOnError: false`.
+Run several agent-browser commands in the same session:
 
 ```ts
-const run = await browser.run([
+const result = await browser.run([
   ['open', 'https://my-preview.vercel.app'],
   ['wait', '--load', 'networkidle'],
   ['snapshot', '-i', '--json'],
   ['click', '@e3'],
 ])
-
-// { session, ok, results: [{ args, ok, exitCode, stdout, stderr, file? }] }
 ```
 
 ### `browser.exec(command, options?)`
 
-Runs one command. `flags` are converted from camelCase to CLI flags; `true` becomes a bare flag and arrays become repeated flags.
+Run one command with arguments and flags:
 
 ```ts
 await browser.exec('find', {
@@ -108,28 +79,10 @@ await browser.exec('find', {
 
 ### Convenience methods
 
-- `browser.snapshot(url)` opens a URL and returns its interactive JSON snapshot.
-- `browser.screenshot(url, { fullPage: true })` returns `{ png: Buffer, result }`.
-- File commands such as `screenshot`, `pdf`, `trace stop`, `profiler stop`, and `record stop` put downloaded bytes on `result.file` when no output path is supplied.
-- `browser.close()` closes the agent-browser session and stops the Sandbox. It is idempotent.
+- `browser.snapshot(url)` opens a page and returns its interactive snapshot.
+- `browser.screenshot(url, { fullPage: true })` returns a PNG buffer.
+- `browser.close()` closes the session and stops the Sandbox.
 
-## Bring your own runner
+All methods use the same disposable browser session until `close()` is called.
 
-`createBrowserClient(runner)` provides the same session-oriented API over
-anything implementing `CommandRunner`.
-
-## Tests
-
-```bash
-node --run typecheck
-node --run test:unit
-node --run test
-```
-
-The default suite skips the billable Vercel integration tests. To boot the
-published image in a real Sandbox and exercise Chromium end to end:
-
-```bash
-set -a; source .env.local; set +a
-RUN_INTEGRATION=1 node --run test:integration
-```
+Container image and development details are in [docs.md](./docs.md).

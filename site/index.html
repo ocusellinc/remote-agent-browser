@@ -37,9 +37,8 @@
       <section class="intro" aria-labelledby="about">
         <h1 id="about"># A BROWSER FOR AGENTS</h1>
         <p>
-          Run <a href="https://github.com/vercel-labs/agent-browser">agent-browser</a>
-          in an isolated Vercel Sandbox. Chromium and the CLI are already inside
-          the container image, so every browser starts from the same clean environment.
+          Run agent-browser in an isolated Vercel Sandbox. Chromium and the CLI
+          come preinstalled, so there is no browser or Docker setup at runtime.
         </p>
       </section>
 
@@ -96,28 +95,11 @@
         </dl>
       </section>
 
-      <section aria-labelledby="image">
-        <h2 id="image">## CONTAINER IMAGE</h2>
-        <p>
-          The default is <code>remote-agent-browser:latest</code>. Use an immutable tag
-          or digest in production.
-        </p>
-        <pre><code><span class="token-keyword">const</span> browser = <span class="token-keyword">await</span> createAgentBrowser({
-  image: <span class="token-string">'remote-agent-browser:v1'</span>,
-})</code></pre>
-      </section>
-
-      <section aria-labelledby="links">
-        <h2 id="links">## LINKS</h2>
-        <nav aria-label="Project links">
-          <a href="https://github.com/vercel-labs/remote-agent-browser">GITHUB</a>
-          <span aria-hidden="true"> / </span>
-          <a href="https://github.com/vercel-labs/remote-agent-browser#readme">FULL DOCUMENTATION</a>
-        </nav>
-      </section>
-
       <footer>
-        <p>VERCEL LABS / MIT LICENSE</p>
+        <p>
+          VERCEL V0 TEAM / 2026 /
+          <a href="https://github.com/vercel-labs/remote-agent-browser">GITHUB</a>
+        </p>
       </footer>
     </main>
   </body>
