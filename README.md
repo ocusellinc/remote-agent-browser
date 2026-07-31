@@ -12,26 +12,16 @@ pnpm add remote-agent-browser
 
 ## Use
 
-```ts
-import { createAgentBrowser } from 'remote-agent-browser'
-
-const browser = await createAgentBrowser()
-
-try {
-  const { results } = await browser.run([
-    ['open', 'https://example.com'],
-    ['snapshot', '-i', '--json'],
-  ])
-
-  console.log(results[1].stdout)
-} finally {
-  await browser.close()
-}
-```
-
 `createAgentBrowser()` starts a fresh Vercel Sandbox from the prebuilt browser
 image. Commands in one client share the same page, cookies, tabs, and element
 references. `close()` closes Chromium and stops the Sandbox.
+
+## Examples
+
+- [Basic browser session](./examples/basic.mjs) — open a page and take an
+  interactive snapshot.
+- [Agent Bash tool integration](./examples/agent-bash-tool/README.md) — let an
+  agent use normal `agent-browser <command>` invocations through its Bash tool.
 
 ## Authentication
 
@@ -43,7 +33,7 @@ For local development, link a Vercel project and pull its environment:
 ```bash
 vercel link
 vercel env pull .env.local
-node --env-file=.env.local example.mjs
+node --env-file=.env.local examples/basic.mjs
 ```
 
 ## API

@@ -27,8 +27,7 @@
     "test:unit": "node --run build && node --test tests/unit.test.mjs"
   },
   "files": [
-    "dist",
-    "Dockerfile.sandbox"
+    "dist"
   ],
   "dependencies": {
     "@vercel/sandbox": "^2.9.0"
