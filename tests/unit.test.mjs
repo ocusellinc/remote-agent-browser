@@ -2,9 +2,10 @@
 // real Vercel Sandbox or Chromium is needed.
 import { describe, it, mock } from 'node:test'
 import assert from 'node:assert/strict'
+import { Sandbox } from '@vercel/sandbox'
 
-import { createBrowserClient, flagsToArgs } from '../src/browser.ts'
-import { createAgentBrowser } from '../dist/index.js'
+import { flagsToArgs } from '../src/browser.ts'
+import { createAgentBrowser, createBrowserClient } from 'remote-agent-browser'
 import {
   DEFAULT_BROWSER_IMAGE,
   provisionBrowserSandbox,
@@ -39,30 +40,33 @@ function makeSandbox(handler) {
 describe('createAgentBrowser', () => {
   it('creates a session client from the requested image and owns its sandbox', async () => {
     const sandbox = makeSandbox()
-    const factory = { create: mock.fn(async () => sandbox) }
+    const create = mock.method(Sandbox, 'create', async () => sandbox)
 
-    const browser = await createAgentBrowser({
-      sandbox: factory,
-      image: 'remote-agent-browser:v1',
-      session: 'agent-session',
-    })
+    try {
+      const browser = await createAgentBrowser({
+        image: 'remote-agent-browser:v1',
+        session: 'agent-session',
+      })
 
-    assert.equal(browser.session, 'agent-session')
-    assert.equal(
-      factory.create.mock.calls[0].arguments[0].image,
-      'remote-agent-browser:v1',
-    )
+      assert.equal(browser.session, 'agent-session')
+      assert.equal(
+        create.mock.calls[0].arguments[0].image,
+        'remote-agent-browser:v1',
+      )
 
-    await browser.exec('open', { args: ['https://example.com'] })
-    assert.deepEqual(sandbox.calls[0].args, [
-      '--session',
-      'agent-session',
-      'open',
-      'https://example.com',
-    ])
+      await browser.exec('open', { args: ['https://example.com'] })
+      assert.deepEqual(sandbox.calls[0].args, [
+        '--session',
+        'agent-session',
+        'open',
+        'https://example.com',
+      ])
 
-    await browser.close()
-    assert.equal(sandbox.stop.mock.calls.length, 1)
+      await browser.close()
+      assert.equal(sandbox.stop.mock.calls.length, 1)
+    } finally {
+      create.mock.restore()
+    }
   })
 })
 
@@ -175,37 +179,44 @@ describe('createBrowserClient', () => {
 describe('provisionBrowserSandbox', () => {
   it('creates an ephemeral sandbox from the default browser image', async () => {
     const sandbox = makeSandbox()
-    const factory = { create: mock.fn(async () => sandbox) }
+    const create = mock.method(Sandbox, 'create', async () => sandbox)
 
-    const runner = await provisionBrowserSandbox({ sandbox: factory })
-    assert.ok(runner)
+    try {
+      const runner = await provisionBrowserSandbox({})
+      assert.ok(runner)
 
-    assert.equal(factory.create.mock.calls.length, 1)
-    const createOpts = factory.create.mock.calls[0].arguments[0]
-    assert.equal(createOpts.image, DEFAULT_BROWSER_IMAGE)
-    assert.deepEqual(createOpts.resources, { vcpus: 2 })
-    assert.equal(createOpts.persistent, false)
-    assert.deepEqual(createOpts.ports, [])
-    assert.match(createOpts.env.AGENT_BROWSER_ARGS, /--no-sandbox/)
-    // Image provisioning needs no install or warm-up commands.
-    assert.equal(sandbox.calls.length, 0)
+      assert.equal(create.mock.calls.length, 1)
+      const createOpts = create.mock.calls[0].arguments[0]
+      assert.equal(createOpts.image, DEFAULT_BROWSER_IMAGE)
+      assert.deepEqual(createOpts.resources, { vcpus: 2 })
+      assert.equal(createOpts.persistent, false)
+      assert.deepEqual(createOpts.ports, [])
+      assert.match(createOpts.env.AGENT_BROWSER_ARGS, /--no-sandbox/)
+      // Image provisioning needs no install or warm-up commands.
+      assert.equal(sandbox.calls.length, 0)
+    } finally {
+      create.mock.restore()
+    }
   })
 
   it('passes an explicit image, resources, timeout, and environment', async () => {
     const sandbox = makeSandbox()
-    const factory = { create: mock.fn(async () => sandbox) }
+    const create = mock.method(Sandbox, 'create', async () => sandbox)
 
-    await provisionBrowserSandbox({
-      sandbox: factory,
-      image: 'browser@sha256:abc',
-      vcpus: 4,
-      timeoutMs: 123_000,
-      env: { CUSTOM: 'yes' },
-    })
-    const createOpts = factory.create.mock.calls[0].arguments[0]
-    assert.equal(createOpts.image, 'browser@sha256:abc')
-    assert.deepEqual(createOpts.resources, { vcpus: 4 })
-    assert.equal(createOpts.timeout, 123_000)
-    assert.equal(createOpts.env.CUSTOM, 'yes')
+    try {
+      await provisionBrowserSandbox({
+        image: 'browser@sha256:abc',
+        vcpus: 4,
+        timeoutMs: 123_000,
+        env: { CUSTOM: 'yes' },
+      })
+      const createOpts = create.mock.calls[0].arguments[0]
+      assert.equal(createOpts.image, 'browser@sha256:abc')
+      assert.deepEqual(createOpts.resources, { vcpus: 4 })
+      assert.equal(createOpts.timeout, 123_000)
+      assert.equal(createOpts.env.CUSTOM, 'yes')
+    } finally {
+      create.mock.restore()
+    }
   })
 })

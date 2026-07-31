@@ -1,5 +1,5 @@
 import { createBrowserClient } from './browser.js'
-import { provisionBrowserSandbox, type SandboxFactory } from './vercel.js'
+import { provisionBrowserSandbox } from './vercel.js'
 import type { AgentBrowser } from './types.js'
 
 export type CreateAgentBrowserOptions = {
@@ -16,8 +16,6 @@ export type CreateAgentBrowserOptions = {
   vcpus?: number
   /** Extra env vars for every command inside the sandbox. */
   env?: Record<string, string>
-  /** Inject a custom Sandbox factory (testing, alternative providers). */
-  sandbox?: SandboxFactory
 }
 
 /**
@@ -46,7 +44,6 @@ export async function createAgentBrowser(
   opts: CreateAgentBrowserOptions = {},
 ): Promise<AgentBrowser> {
   const runner = await provisionBrowserSandbox({
-    sandbox: opts.sandbox,
     image: opts.image,
     timeoutMs: opts.timeoutMs,
     vcpus: opts.vcpus,

@@ -60,7 +60,7 @@ VCR builds an optimized Sandbox image after a push. No npm, system-package, or b
 ## 2. Install and authenticate
 
 ```bash
-npm install remote-agent-browser
+pnpm add remote-agent-browser
 ```
 
 `@vercel/sandbox` reads credentials from the environment. On Vercel this is normally `VERCEL_OIDC_TOKEN`; locally, use a linked project and `vercel env pull .env.local`.
@@ -116,16 +116,14 @@ await browser.exec('find', {
 ## Bring your own runner
 
 `createBrowserClient(runner)` provides the same session-oriented API over
-anything implementing `CommandRunner`. Provider-specific primitives such as
-`provisionBrowserSandbox`, `SandboxRunner`, and `SandboxFactory` are available
-from `remote-agent-browser/vercel`.
+anything implementing `CommandRunner`.
 
 ## Tests
 
 ```bash
-npm run typecheck
-npm run test:unit
-npm test
+node --run typecheck
+node --run test:unit
+node --run test
 ```
 
 The default suite skips the billable Vercel integration tests. To boot the
@@ -133,5 +131,5 @@ published image in a real Sandbox and exercise Chromium end to end:
 
 ```bash
 set -a; source .env.local; set +a
-RUN_INTEGRATION=1 npm run test:integration
+RUN_INTEGRATION=1 node --run test:integration
 ```

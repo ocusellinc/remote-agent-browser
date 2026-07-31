@@ -8,6 +8,7 @@
     "url": "git+https://github.com/vercel-labs/remote-agent-browser.git"
   },
   "type": "module",
+  "packageManager": "pnpm@11.18.0",
   "publishConfig": {
     "access": "public"
   },
@@ -15,29 +16,26 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./vercel": {
-      "types": "./dist/vercel.d.ts",
-      "import": "./dist/vercel.js"
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "prepack": "npm run build",
+    "build": "bunchee --runtime node",
+    "prepack": "node --run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "npm run build && node --test tests/*.test.mjs",
-    "test:integration": "npm run build && node --test tests/integration.test.mjs",
-    "test:unit": "npm run build && node --test tests/unit.test.mjs"
+    "test": "node --run build && node --test tests/*.test.mjs",
+    "test:integration": "node --run build && node --test tests/integration.test.mjs",
+    "test:unit": "node --run build && node --test tests/unit.test.mjs"
   },
   "files": [
     "dist",
     "Dockerfile.sandbox"
   ],
   "dependencies": {
-    "@vercel/sandbox": ">=2.9.0"
+    "@vercel/sandbox": "^2.9.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "bunchee": "^7.0.0",
     "typescript": "^5.9.0"
   }
 }

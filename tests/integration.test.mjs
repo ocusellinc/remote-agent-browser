@@ -1,14 +1,14 @@
 // Real integration coverage. This creates a billable Vercel Sandbox from the
 // published browser image, launches Chromium, and exercises the public API.
 //
-//   RUN_INTEGRATION=1 npm run test:integration
+//   RUN_INTEGRATION=1 node --run test:integration
 //
 // Auth is provided by @vercel/sandbox (for local runs, link the project and
 // refresh .env.local with `vercel env pull`).
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { createAgentBrowser } from '../dist/index.js'
+import { createAgentBrowser } from 'remote-agent-browser'
 
 const enabled = process.env.RUN_INTEGRATION === '1'
 const PAGE = `data:text/html,${encodeURIComponent(`<!doctype html>

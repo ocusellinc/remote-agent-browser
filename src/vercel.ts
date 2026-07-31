@@ -1,37 +1,5 @@
+import { Sandbox } from '@vercel/sandbox'
 import type { CommandRunner } from './types.js'
-
-/** Minimal shape of a @vercel/sandbox Command we rely on. */
-export interface SandboxCommandLike {
-  wait(): Promise<{ exitCode: number } | number>
-  output(stream?: 'stdout' | 'stderr'): Promise<string>
-  kill(): Promise<void>
-}
-
-/** Minimal shape of a @vercel/sandbox Sandbox we rely on. */
-export interface SandboxLike {
-  sandboxId: string
-  status: string
-  runCommand(opts: {
-    cmd: string
-    args?: string[]
-    env?: Record<string, string>
-    detached?: boolean
-  }): Promise<SandboxCommandLike>
-  stop(): Promise<unknown>
-}
-
-/** The small, injectable part of the Sandbox SDK used by this package. */
-export type SandboxFactory = {
-  create(opts: {
-    image: string
-    resources?: { vcpus: number }
-    timeout?: number
-    ports?: number[]
-    env?: Record<string, string>
-    /** Browser Sandboxes are disposable by default, avoiding snapshot storage. */
-    persistent?: boolean
-  }): Promise<SandboxLike>
-}
 
 const DEFAULT_TIMEOUT_MS = 10 * 60 * 1000
 export const DEFAULT_BROWSER_IMAGE = 'remote-agent-browser:latest'
@@ -43,10 +11,10 @@ const BASE_ENV = {
 
 /** CommandRunner backed by one Vercel Sandbox. */
 export class SandboxRunner implements CommandRunner {
-  private sandbox: SandboxLike
+  private sandbox: Sandbox
   private env: Record<string, string>
 
-  constructor(sandbox: SandboxLike, env: Record<string, string>) {
+  constructor(sandbox: Sandbox, env: Record<string, string>) {
     this.sandbox = sandbox
     this.env = env
   }
@@ -103,10 +71,6 @@ export class SandboxRunner implements CommandRunner {
   async close(): Promise<void> {
     await this.sandbox.stop().catch(() => {})
   }
-
-  get sandboxId(): string {
-    return this.sandbox.sandboxId
-  }
 }
 
 /**
@@ -117,20 +81,15 @@ export class SandboxRunner implements CommandRunner {
  * tag, digest, or fully-qualified VCR reference is accepted by the SDK.
  */
 export async function provisionBrowserSandbox(opts: {
-  sandbox?: SandboxFactory
   image?: string
   timeoutMs?: number
   vcpus?: number
   env?: Record<string, string>
 }): Promise<SandboxRunner> {
-  const factory =
-    opts.sandbox ??
-    ((await import('@vercel/sandbox')) as unknown as { Sandbox: SandboxFactory })
-      .Sandbox
   const image =
     opts.image ?? process.env.REMOTE_AGENT_BROWSER_IMAGE ?? DEFAULT_BROWSER_IMAGE
   const env = { ...BASE_ENV, ...opts.env }
-  const sandbox = await factory.create({
+  const sandbox = await Sandbox.create({
     image,
     resources: { vcpus: opts.vcpus ?? 2 },
     timeout: opts.timeoutMs ?? DEFAULT_TIMEOUT_MS,
