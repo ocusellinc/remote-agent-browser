@@ -11,7 +11,7 @@
 /** One agent-browser CLI invocation result. */
 export type BrowserFile = { path: string; bytes: Buffer; contentType: string }
 
-export type BrowserCommandResult = {
+export type BrowserCommandResult<T = never> = {
   /** The CLI args that ran, e.g. ["snapshot", "-i", "--json"] */
   args: string[]
   ok: boolean
@@ -20,7 +20,7 @@ export type BrowserCommandResult = {
   stderr: string
   /** File bytes collected from the sandbox for file-producing commands. */
   file?: BrowserFile
-}
+} & ([T] extends [never] ? {} : { data: T })
 
 /** A local file to make available to an upload command. */
 export type BrowserUploadFile = { name: string; bytes: Buffer }
@@ -50,7 +50,11 @@ export type ExecOptions = {
   /** Flags serialized to --kebab-case (true → bare flag, arrays → repeated). */
   flags?: Record<string, unknown>
   timeoutMs?: number
+  /** Leave command output as text. This is the default. */
+  output?: 'text'
 }
+
+export type JsonExecOptions = Omit<ExecOptions, 'output'> & { output: 'json' }
 
 export type BrowserClientOptions = {
   session?: string
@@ -86,7 +90,12 @@ export interface AgentBrowser {
   readonly session: string
   /** Run a batch of agent-browser arg-arrays sequentially. */
   run(commands: string[][], opts?: RunOptions): Promise<BrowserRunResult>
-  /** Run one agent-browser command by name. */
+  /** Run one command and unwrap its typed --json data payload. */
+  exec<T>(
+    command: string,
+    opts: JsonExecOptions,
+  ): Promise<BrowserCommandResult<T>>
+  /** Run one agent-browser command with text output. */
   exec(command: string, opts?: ExecOptions): Promise<BrowserCommandResult>
   /** Upload one or more local buffers through a file input. */
   upload(

@@ -246,6 +246,79 @@ describe('createBrowserClient', () => {
     await browser.close()
   })
 
+  it('adds --json and returns parsed command data', async () => {
+    const r = runner()
+    r.run.mock.mockImplementationOnce(async () => ({
+      stdout: '{"success":true,"data":{"url":"https://example.com"}}',
+      stderr: '',
+      exitCode: 0,
+    }))
+    const browser = createBrowserClient(r, { session: 's1' })
+    const result = await browser.exec('get', {
+      args: ['url'],
+      output: 'json',
+    })
+
+    assert.deepEqual(r.run.mock.calls[0].arguments[1], [
+      '--session', 's1', 'get', 'url', '--json',
+    ])
+    assert.deepEqual(result.data, { url: 'https://example.com' })
+    assert.equal(result.ok, true)
+    assert.equal(
+      result.stdout,
+      '{"success":true,"data":{"url":"https://example.com"}}',
+    )
+    await browser.close()
+  })
+
+  it('reports invalid JSON with command context', async () => {
+    const r = runner()
+    const browser = createBrowserClient(r, { session: 's1' })
+    await assert.rejects(browser.exec('snapshot', { output: 'json' }), {
+      name: 'SyntaxError',
+      message: /agent-browser snapshot did not return valid JSON/,
+    })
+    await browser.close()
+  })
+
+  it('surfaces command failures before attempting to parse JSON', async () => {
+    const r = runner()
+    r.run.mock.mockImplementationOnce(async () => ({
+      stdout: '',
+      stderr: 'element not found',
+      exitCode: 1,
+    }))
+    const browser = createBrowserClient(r, { session: 's1' })
+
+    await assert.rejects(browser.exec('click', {
+      args: ['@missing'],
+      output: 'json',
+    }), {
+      name: 'Error',
+      message: 'agent-browser click failed with exit code 1: element not found',
+    })
+    await browser.close()
+  })
+
+  it('rejects JSON without the agent-browser response envelope', async () => {
+    const r = runner()
+    r.run.mock.mockImplementationOnce(async () => ({
+      stdout: '{"url":"https://example.com"}',
+      stderr: '',
+      exitCode: 0,
+    }))
+    const browser = createBrowserClient(r, { session: 's1' })
+
+    await assert.rejects(browser.exec('get', {
+      args: ['url'],
+      output: 'json',
+    }), {
+      name: 'SyntaxError',
+      message: /did not return a successful JSON envelope/,
+    })
+    await browser.close()
+  })
+
   it('writes local buffers before uploading them', async () => {
     const r = runner()
     const browser = createBrowserClient(r, { session: 's1' })

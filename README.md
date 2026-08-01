@@ -77,6 +77,22 @@ await browser.exec('find', {
 })
 ```
 
+### Typed JSON
+
+Set `output: 'json'` for commands that support `--json`. `exec<T>()` adds the
+flag, unwraps the CLI response envelope, and keeps the normal command fields
+alongside the typed `data` value:
+
+```ts
+type UrlResult = { url: string }
+
+const result = await browser.exec<UrlResult>('get', {
+  args: ['url'],
+  output: 'json',
+})
+console.log(result.data.url, result.ok)
+```
+
 ### File transfer
 
 Upload local buffers through a page's file input, or collect a browser download

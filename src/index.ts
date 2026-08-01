@@ -8,6 +8,7 @@ export type {
   BrowserRunResult,
   CommandRunner,
   ExecOptions,
+  JsonExecOptions,
   AgentBrowser,
   RunOptions,
 } from './types.js'
