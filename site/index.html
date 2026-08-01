@@ -190,7 +190,6 @@
     args: [<span class="token-string">'url'</span>],
     output: <span class="token-string">'json'</span>,
   })
-
   console.log(page.data.url)
 } <span class="token-keyword">finally</span> {
   <span class="token-keyword">await</span> browser.close()
@@ -262,13 +261,11 @@
 <span class="token-keyword">const</span> { file } = <span class="token-keyword">await</span> browser.download(<span class="token-string">'@e4'</span>, {
   filename: <span class="token-string">'report.csv'</span>,
 })
-
 <span class="token-keyword">await</span> writeFile(<span class="token-string">'report.csv'</span>, file.bytes)
 
 <span class="token-keyword">const</span> trace = <span class="token-keyword">await</span> browser.exec(<span class="token-string">'trace'</span>, {
   args: [<span class="token-string">'stop'</span>],
 })
-
 console.log(trace.file?.contentType)</code></pre>
         <p class="note">
           File-producing commands use temporary Sandbox paths and return the

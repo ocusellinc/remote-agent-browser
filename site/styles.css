@@ -238,10 +238,10 @@ dd code {
 pre {
   max-width: 760px;
   overflow-x: auto;
-  padding: 18px 20px;
-  border-radius: 8px;
+  padding: 13px 16px;
+  border-radius: 6px;
   background: var(--surface);
-  line-height: 1.7;
+  line-height: 1.5;
   tab-size: 2;
 }
 
