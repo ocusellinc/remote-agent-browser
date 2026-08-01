@@ -44,25 +44,128 @@
         </a>
         <nav aria-label="Project links">
           <a href="https://www.npmjs.com/package/remote-agent-browser">npm</a>
-          <a href="https://github.com/vercel-labs/remote-agent-browser">GitHub</a>
+          <a href="https://github.com/vercel-labs/remote-agent-browser">github</a>
         </nav>
       </header>
 
       <section class="intro" aria-labelledby="about">
-        <p class="eyebrow">VERCEL SANDBOX · AGENT-BROWSER · TYPESCRIPT</p>
-        <h1 id="about">Browser infrastructure for agents.</h1>
+        <p class="eyebrow">VERCEL SANDBOX · AGENT-BROWSER</p>
+        <h1 id="about">Remote Agent Browser</h1>
         <p>
-          Run agent-browser in an isolated Vercel Sandbox with Chromium ready
-          from the first command. No browser or Docker setup at runtime.
+          Agent-friendly headless browser infrastructure, ready from the first
+          command. Use
+          <a href="https://github.com/vercel-labs/agent-browser"><code>agent-browser</code></a>
+          with browser state preserved across every step.
         </p>
         <div class="actions">
-          <a class="button button-primary" href="https://github.com/vercel-labs/remote-agent-browser">
-            View on GitHub
+          <a href="https://github.com/vercel-labs/remote-agent-browser">
+            View on GitHub <span aria-hidden="true">↗</span>
           </a>
-          <a class="button button-secondary" href="https://www.npmjs.com/package/remote-agent-browser">
-            View on npm
+          <a href="https://www.npmjs.com/package/remote-agent-browser">
+            View on npm <span aria-hidden="true">↗</span>
           </a>
         </div>
+        <ul class="benefits">
+          <li>
+            <strong>Smaller deploys</strong>
+            <span>Chromium stays in the Sandbox image.</span>
+          </li>
+          <li>
+            <strong>Fast starts</strong>
+            <span>Chromium and the CLI are ready when the Sandbox boots.</span>
+          </li>
+          <li>
+            <strong>Managed lifecycle</strong>
+            <span>Every browser is isolated and stops with one call.</span>
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="demo">
+        <div
+          class="agent-demo"
+          aria-label="An agent uses agent-browser in a Vercel Sandbox to open a site, take a screenshot, and click a button."
+        >
+          <h2 id="demo" class="visually-hidden">
+            Remote browser calls running in a Vercel Sandbox
+          </h2>
+          <div class="demo-header" aria-hidden="true">
+            <span class="demo-status">
+              <span class="sandbox-icon">
+                <svg viewBox="0 0 20 20" fill="none">
+                  <path d="M10 2.5 17 6.5v7l-7 4-7-4v-7l7-4Z" />
+                  <path d="m3 6.5 7 4 7-4M10 10.5v7" />
+                </svg>
+              </span>
+              Vercel Sandbox
+            </span>
+            <span>agent-browser · session-01</span>
+          </div>
+          <div class="demo-stage" aria-hidden="true">
+            <div class="demo-terminal">
+              <p class="demo-label">AGENT</p>
+              <p class="demo-line demo-line-open">
+                <span class="demo-prompt">›</span> browser.exec('open')
+              </p>
+              <p class="demo-line demo-line-screenshot">
+                <span class="demo-prompt">›</span> browser.screenshot()
+              </p>
+              <p class="demo-line demo-line-click">
+                <span class="demo-prompt">›</span> browser.exec('click')
+              </p>
+            </div>
+            <div class="demo-browser">
+              <div class="demo-browser-bar">
+                <span class="browser-pixel">■</span>
+                <span class="demo-url">preview.app</span>
+              </div>
+              <div class="demo-page">
+                <div class="demo-page-content">
+                  <p class="demo-kicker">PREVIEW_01</p>
+                  <div class="demo-pixel-mark"></div>
+                  <p class="demo-title">Hello, agent.</p>
+                  <div class="demo-target">
+                    <span class="demo-ref">@e1</span>
+                    Run
+                  </div>
+                </div>
+                <div class="demo-pixel-burst">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+              <div class="demo-capture">
+                <span>PNG SAVED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="note">
+          Each call runs inside a remote Sandbox while browser state persists
+          between steps.
+        </p>
       </section>
 
       <section aria-labelledby="install">
@@ -174,11 +277,28 @@ console.log(trace.file?.contentType)</code></pre>
       </section>
 
       <footer>
-        <p>
-          <span aria-hidden="true">▲</span> VERCEL LABS / 2026 /
-          <a href="https://github.com/vercel-labs/remote-agent-browser">GITHUB</a>
-        </p>
+        <p><span aria-hidden="true">▲</span> VERCEL LABS / 2026</p>
       </footer>
     </main>
+    <script>
+      const agentDemo = document.querySelector('.agent-demo')
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+      if (agentDemo && !reduceMotion.matches) {
+        agentDemo.classList.add('is-animated')
+
+        if ('IntersectionObserver' in window) {
+          const observer = new IntersectionObserver(
+            ([entry]) => {
+              agentDemo.classList.toggle('is-running', Boolean(entry?.isIntersecting))
+            },
+            { threshold: 0.3 },
+          )
+          observer.observe(agentDemo)
+        } else {
+          agentDemo.classList.add('is-running')
+        }
+      }
+    </script>
   </body>
 </html>
