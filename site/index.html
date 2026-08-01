@@ -36,39 +36,59 @@
   <body>
     <main class="page">
       <header class="masthead">
-        <p class="wordmark">
-          REMOTE AGENT BROWSER <span class="cursor" aria-hidden="true"></span>
-        </p>
-        <p>VERCEL V0 TEAM</p>
-        <p>2026</p>
+        <a class="brand" href="https://vercel.com">
+          <span class="vercel-mark" aria-hidden="true">▲</span>
+          <span>Vercel Labs</span>
+          <span class="brand-divider" aria-hidden="true">/</span>
+          <span class="product-name">Remote Agent Browser</span>
+        </a>
+        <nav aria-label="Project links">
+          <a href="https://www.npmjs.com/package/remote-agent-browser">npm</a>
+          <a href="https://github.com/vercel-labs/remote-agent-browser">GitHub</a>
+        </nav>
       </header>
 
       <section class="intro" aria-labelledby="about">
-        <h1 id="about"># A BROWSER FOR AGENTS</h1>
+        <p class="eyebrow">VERCEL SANDBOX · AGENT-BROWSER · TYPESCRIPT</p>
+        <h1 id="about">Browser infrastructure for agents.</h1>
         <p>
-          Run agent-browser in an isolated Vercel Sandbox. Chromium and the CLI
-          come preinstalled, so there is no browser or Docker setup at runtime.
+          Run agent-browser in an isolated Vercel Sandbox with Chromium ready
+          from the first command. No browser or Docker setup at runtime.
         </p>
+        <div class="actions">
+          <a class="button button-primary" href="https://github.com/vercel-labs/remote-agent-browser">
+            View on GitHub
+          </a>
+          <a class="button button-secondary" href="https://www.npmjs.com/package/remote-agent-browser">
+            View on npm
+          </a>
+        </div>
       </section>
 
       <section aria-labelledby="install">
-        <h2 id="install">## INSTALL</h2>
+        <h2 id="install">INSTALL</h2>
         <pre><code>pnpm add remote-agent-browser</code></pre>
       </section>
 
       <section aria-labelledby="usage">
-        <h2 id="usage">## BASIC USAGE</h2>
+        <h2 id="usage">BASIC USAGE</h2>
         <pre><code><span class="token-keyword">import</span> { createAgentBrowser } <span class="token-keyword">from</span> <span class="token-string">'remote-agent-browser'</span>
 
-<span class="token-keyword">const</span> browser = <span class="token-keyword">await</span> createAgentBrowser()
+<span class="token-keyword">const</span> browser = <span class="token-keyword">await</span> createAgentBrowser({
+  globalArgs: [<span class="token-string">'--color-scheme'</span>, <span class="token-string">'dark'</span>],
+})
 
 <span class="token-keyword">try</span> {
-  <span class="token-keyword">const</span> { results } = <span class="token-keyword">await</span> browser.run([
-    [<span class="token-string">'open'</span>, <span class="token-string">'https://example.com'</span>],
-    [<span class="token-string">'snapshot'</span>, <span class="token-string">'-i'</span>, <span class="token-string">'--json'</span>],
-  ])
+  <span class="token-keyword">await</span> browser.exec(<span class="token-string">'open'</span>, {
+    args: [<span class="token-string">'https://example.com'</span>],
+  })
 
-  console.log(results[<span class="token-number">1</span>].stdout)
+  <span class="token-keyword">const</span> page = <span class="token-keyword">await</span> browser.exec&lt;{ url: string }&gt;(<span class="token-string">'get'</span>, {
+    args: [<span class="token-string">'url'</span>],
+    output: <span class="token-string">'json'</span>,
+  })
+
+  console.log(page.data.url)
 } <span class="token-keyword">finally</span> {
   <span class="token-keyword">await</span> browser.close()
 }</code></pre>
@@ -79,8 +99,15 @@
       </section>
 
       <section aria-labelledby="commands">
-        <h2 id="commands">## COMMANDS</h2>
+        <h2 id="commands">API</h2>
         <dl class="api-list">
+          <div>
+            <dt><code>createAgentBrowser(options?)</code></dt>
+            <dd>
+              Start a disposable browser Sandbox. Use <code>globalArgs</code>
+              for launch settings shared by every command.
+            </dd>
+          </div>
           <div>
             <dt><code>browser.run(commands)</code></dt>
             <dd>Run several agent-browser commands in one session.</dd>
@@ -91,15 +118,27 @@
           </div>
           <div>
             <dt><code>browser.exec&lt;T&gt;(command, { output: "json" })</code></dt>
-            <dd>Run a command and return its parsed, typed JSON data.</dd>
+            <dd>Add <code>--json</code>, validate its response, and return the typed data.</dd>
+          </div>
+          <div>
+            <dt><code>browser.upload(selector, files)</code></dt>
+            <dd>Stage local buffers in the Sandbox and upload them through a file input.</dd>
+          </div>
+          <div>
+            <dt><code>browser.download(selector, options?)</code></dt>
+            <dd>Trigger a browser download and return its bytes.</dd>
           </div>
           <div>
             <dt><code>browser.snapshot(url?)</code></dt>
-            <dd>Open a page and return its interactive JSON snapshot.</dd>
+            <dd>Optionally open a URL, then capture an interactive snapshot.</dd>
           </div>
           <div>
             <dt><code>browser.screenshot(url?)</code></dt>
-            <dd>Open a page and return a PNG buffer.</dd>
+            <dd>Optionally open a URL, then return a PNG buffer.</dd>
+          </div>
+          <div>
+            <dt><code>result.file</code></dt>
+            <dd>Read collected screenshots, PDFs, traces, HAR, state, and video output.</dd>
           </div>
           <div>
             <dt><code>browser.close()</code></dt>
@@ -108,9 +147,35 @@
         </dl>
       </section>
 
+      <section aria-labelledby="files">
+        <h2 id="files">FILES</h2>
+        <pre><code><span class="token-keyword">import</span> { readFile, writeFile } <span class="token-keyword">from</span> <span class="token-string">'node:fs/promises'</span>
+
+<span class="token-keyword">await</span> browser.upload(<span class="token-string">'#avatar'</span>, [{
+  name: <span class="token-string">'avatar.png'</span>,
+  bytes: <span class="token-keyword">await</span> readFile(<span class="token-string">'avatar.png'</span>),
+}])
+
+<span class="token-keyword">const</span> { file } = <span class="token-keyword">await</span> browser.download(<span class="token-string">'@e4'</span>, {
+  filename: <span class="token-string">'report.csv'</span>,
+})
+
+<span class="token-keyword">await</span> writeFile(<span class="token-string">'report.csv'</span>, file.bytes)
+
+<span class="token-keyword">const</span> trace = <span class="token-keyword">await</span> browser.exec(<span class="token-string">'trace'</span>, {
+  args: [<span class="token-string">'stop'</span>],
+})
+
+console.log(trace.file?.contentType)</code></pre>
+        <p class="note">
+          File-producing commands use temporary Sandbox paths and return the
+          collected bytes without exposing the remote filesystem.
+        </p>
+      </section>
+
       <footer>
         <p>
-          VERCEL V0 TEAM / 2026 /
+          <span aria-hidden="true">▲</span> VERCEL LABS / 2026 /
           <a href="https://github.com/vercel-labs/remote-agent-browser">GITHUB</a>
         </p>
       </footer>
