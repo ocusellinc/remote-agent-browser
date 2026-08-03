@@ -8,7 +8,7 @@
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { AgentBrowser } from 'remote-agent-browser'
+import { AgentBrowser } from '../dist/index.js'
 
 const enabled = process.env.RUN_INTEGRATION === '1'
 const PAGE = `data:text/html,${encodeURIComponent(`<!doctype html>

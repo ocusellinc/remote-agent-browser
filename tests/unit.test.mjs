@@ -9,7 +9,7 @@ import {
   AgentBrowser,
   createAgentBrowser,
   createBrowserClient,
-} from 'remote-agent-browser'
+} from '../dist/index.js'
 import {
   DEFAULT_BROWSER_IMAGE,
   provisionBrowserSandbox,
