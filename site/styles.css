@@ -135,14 +135,6 @@ p {
   max-width: 640px;
 }
 
-.eyebrow {
-  margin-bottom: 18px;
-  color: var(--muted);
-  font-family: "Geist Mono", ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.055em;
-}
-
 h1 {
   margin-bottom: 18px;
   font-size: clamp(36px, 6vw, 52px);
@@ -152,7 +144,7 @@ h1 {
   white-space: nowrap;
 }
 
-.intro > p:not(.eyebrow) {
+.intro > p {
   max-width: 580px;
   color: var(--muted);
   font-size: 17px;
@@ -173,36 +165,37 @@ h1 {
 
 .benefits {
   display: grid;
-  gap: 7px;
-  margin: 32px 0 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 40px 0 0;
   padding: 0;
+  border-top: 1px solid var(--foreground);
+  border-bottom: 1px solid var(--foreground);
   color: var(--muted);
   list-style: none;
 }
 
 .benefits li {
-  position: relative;
-  display: grid;
-  grid-template-columns: 130px minmax(0, 1fr);
-  gap: 10px;
-  padding-left: 15px;
+  min-height: 126px;
+  padding: 22px 20px 24px;
 }
 
-.benefits li::before {
-  position: absolute;
-  left: 0;
-  color: var(--foreground);
-  content: "•";
+.benefits li + li {
+  border-left: 1px solid var(--foreground);
 }
 
 .benefits strong {
+  display: block;
+  margin-bottom: 9px;
   color: var(--foreground);
-  font-weight: 550;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
 }
 
-.benefits li > span::before {
-  margin-right: 7px;
-  content: "—";
+.benefits li > span {
+  display: block;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 a {
@@ -884,6 +877,20 @@ footer {
 
   h1 {
     font-size: clamp(26px, 8.4vw, 38px);
+  }
+
+  .benefits {
+    grid-template-columns: 1fr;
+  }
+
+  .benefits li {
+    min-height: 0;
+    padding: 18px 0 20px;
+  }
+
+  .benefits li + li {
+    border-top: 1px solid var(--foreground);
+    border-left: 0;
   }
 
   .demo-header > span:last-child {
