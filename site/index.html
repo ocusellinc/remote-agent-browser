@@ -50,12 +50,7 @@
 
       <section class="intro" aria-labelledby="about">
         <h1 id="about">Remote Agent Browser</h1>
-        <p>
-          Agent-friendly headless browser infrastructure, ready from the first
-          command. Use
-          <a href="https://github.com/vercel-labs/agent-browser"><code>agent-browser</code></a>
-          with browser state preserved across every step.
-        </p>
+        <p>An agent-friendly, programmable browser in the cloud.</p>
         <div class="actions">
           <a href="https://github.com/vercel-labs/remote-agent-browser">
             View on GitHub <span aria-hidden="true">↗</span>
@@ -83,7 +78,7 @@
       <section aria-labelledby="demo">
         <div
           class="agent-demo"
-          aria-label="An agent uses agent-browser in a Vercel Sandbox to open a site, take a screenshot, and click a button."
+          aria-label="An agent uses agent-browser in a Vercel Sandbox to open a site, click a button, and take a screenshot."
         >
           <h2 id="demo" class="visually-hidden">
             Remote browser calls running in a Vercel Sandbox
@@ -106,11 +101,12 @@
               <p class="demo-line demo-line-open">
                 <span class="demo-prompt">›</span> browser.exec('open')
               </p>
+              <p class="demo-line demo-line-click">
+                <span class="demo-prompt">›</span> browser.exec('click', { args:
+                ['@e1'] })
+              </p>
               <p class="demo-line demo-line-screenshot">
                 <span class="demo-prompt">›</span> browser.screenshot()
-              </p>
-              <p class="demo-line demo-line-click">
-                <span class="demo-prompt">›</span> browser.exec('click')
               </p>
             </div>
             <div class="demo-browser">

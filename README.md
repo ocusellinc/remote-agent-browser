@@ -1,8 +1,7 @@
 # remote-agent-browser
 
-Run [agent-browser](https://github.com/vercel-labs/agent-browser) in an isolated
-[Vercel Sandbox](https://vercel.com/docs/vercel-sandbox). Chromium and the CLI
-come preinstalled, so there is no browser or Docker setup at runtime.
+Run [agent-browser](https://github.com/vercel-labs/agent-browser) in the cloud
+with an isolated [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox).
 
 ## Install
 
