@@ -61,6 +61,7 @@ describe('AgentBrowser.create', () => {
         image: 'remote-agent-browser:v1',
         session: 'agent-session',
         args: ['--color-scheme', 'dark'],
+        proxy: 'http://proxy.example.com:8080',
       })
 
       assert.equal(browser.session, 'agent-session')
@@ -78,6 +79,10 @@ describe('AgentBrowser.create', () => {
         'open',
         'https://example.com',
       ])
+      assert.equal(
+        sandbox.calls[0].env.AGENT_BROWSER_PROXY,
+        'http://proxy.example.com:8080',
+      )
 
       const stopKeepalive = browser.keepalive({
         timeoutMs: 10_000,
@@ -192,6 +197,90 @@ describe('createBrowserClient', () => {
       'react-devtools',
       'close',
     ])
+  })
+
+  it('uses proxy environment variables without exposing credentials in args', async () => {
+    const proxy = 'http://user:password@proxy.example.com:8080'
+    const r = runner()
+    r.run.mock.mockImplementationOnce(async () => ({
+      stdout: `connected through ${proxy}`,
+      stderr: `proxy warning: ${proxy}`,
+      exitCode: 0,
+    }))
+    const browser = createBrowserClient(r, {
+      session: 's1',
+      proxy: {
+        url: proxy,
+        bypass: ['localhost', '*.internal.example.com'],
+      },
+    })
+
+    const result = await browser.exec('open', {
+      args: ['https://example.com'],
+    })
+    assert.equal(r.run.mock.calls[0].arguments[1].includes(proxy), false)
+    assert.deepEqual(r.run.mock.calls[0].arguments[2].env, {
+      AGENT_BROWSER_PROXY: proxy,
+      AGENT_BROWSER_PROXY_BYPASS: 'localhost,*.internal.example.com',
+    })
+    assert.equal(
+      result.stdout,
+      'connected through http://***:***@proxy.example.com:8080',
+    )
+    assert.equal(
+      result.stderr,
+      'proxy warning: http://***:***@proxy.example.com:8080',
+    )
+
+    await browser.close()
+    assert.deepEqual(r.run.mock.calls[1].arguments[2].env, {
+      AGENT_BROWSER_PROXY: proxy,
+      AGENT_BROWSER_PROXY_BYPASS: 'localhost,*.internal.example.com',
+    })
+  })
+
+  it('redacts runner errors without replacing the original error', async () => {
+    const proxy = 'http://user:password@proxy.example.com:8080'
+    const cause = new Error('connection refused')
+    class RunnerError extends Error {
+      code = 'PROXY_FAILURE'
+    }
+    const failure = new RunnerError(`failed to connect through ${proxy}`, {
+      cause,
+    })
+    failure.stack = `RunnerError: failed to connect through ${proxy}\n    at runner`
+    const r = runner()
+    r.run.mock.mockImplementationOnce(async () => {
+      throw failure
+    })
+    const browser = createBrowserClient(r, { session: 's1', proxy })
+
+    await assert.rejects(browser.exec('open'), (error) => {
+      assert.equal(error, failure)
+      assert.ok(error instanceof RunnerError)
+      assert.equal(error.cause, cause)
+      assert.equal(error.code, 'PROXY_FAILURE')
+      assert.equal(
+        error.message,
+        'failed to connect through http://***:***@proxy.example.com:8080',
+      )
+      assert.equal(error.stack.includes(proxy), false)
+      return true
+    })
+
+    await browser.close()
+  })
+
+  it('rejects typed proxy configuration combined with proxy args', () => {
+    const r = runner()
+    assert.throws(
+      () =>
+        createBrowserClient(r, {
+          proxy: 'http://proxy.example.com:8080',
+          args: ['--proxy-bypass=localhost'],
+        }),
+      /proxy cannot be combined/,
+    )
   })
 
   it('stops on the first failure by default', async () => {
