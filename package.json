@@ -1,6 +1,6 @@
 {
   "name": "remote-agent-browser",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Run agent-browser in a Vercel Sandbox created from a browser-ready container image",
   "license": "MIT",
   "repository": {
