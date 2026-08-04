@@ -102,6 +102,25 @@ await browser.exec('find', {
 })
 ```
 
+### `browser.shell(command, options?)`
+
+Use this when forwarding a Bash-tool command or composing `agent-browser` with
+normal shell utilities. The command runs verbatim, so quoting, pipes,
+redirection, and control operators keep their shell semantics. Prefer `exec()`
+or `run()` for browser commands that do not need a shell. Every `agent-browser`
+invocation inherits the client's CLI session through `AGENT_BROWSER_SESSION`.
+
+```ts
+const result = await browser.shell(
+  'agent-browser read "https://example.com" | grep -io "example" | wc -l',
+)
+console.log(result.stdout)
+```
+
+Client-wide `args` are not inserted into a shell string because doing so would
+require rewriting arbitrary shell syntax. Put global CLI arguments directly in
+the command when using `shell()`.
+
 ### Typed JSON
 
 Set `output: 'json'` for commands that support `--json`. `exec<T>()` adds the
@@ -141,6 +160,17 @@ await browser.exec('network', { args: ['har', 'start'] })
 // ...interact with the page...
 const result = await browser.exec('network', { args: ['har', 'stop'] })
 await writeFile('capture.har', result.file.bytes)
+```
+
+When a command already contains an explicit remote output path, read it back
+without changing the command:
+
+```ts
+await browser.shell(
+  'agent-browser screenshot /tmp/verification.png',
+)
+const file = await browser.readFile('/tmp/verification.png', 'image/png')
+await writeFile('verification.png', file.bytes)
 ```
 
 ### Convenience methods
