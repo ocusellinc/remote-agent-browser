@@ -3,6 +3,23 @@
 Run [agent-browser](https://github.com/vercel-labs/agent-browser) in the cloud
 with an isolated [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox).
 
+## Benchmark
+
+Loading and taking an interactive snapshot of 100 HTTPS pages in a fresh,
+two-vCPU Vercel Sandbox:
+
+| Metric | Result |
+| --- | ---: |
+| Execution time (100 pages) | 8.01s |
+| Memory (peak, 100 pages) | 461.6MB PSS |
+
+Execution time includes Sandbox creation. The published time is the median and
+memory is the maximum from three successful runs using Chromium 151,
+agent-browser 0.33.2, and `https://example.com/` with a unique query per page.
+Each page must produce the expected content and interactive snapshot references.
+
+See [the benchmark methodology](./benchmarks/BENCHMARK.md) for details.
+
 ## Install
 
 ```bash
