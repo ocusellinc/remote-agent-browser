@@ -1,4 +1,29 @@
-# remote-agent-browser
+# remote-agent-browser (Ocusell fork)
+
+> **Current status:** the production Assurance runtime does not depend on this
+> package. It uses the sibling `agent-runtime` and `browser-runner` services on
+> AWS. This fork is retained to develop a reusable remote command-runner client
+> without Vercel Sandbox as a future option.
+
+The upstream Vercel Sandbox implementation and documentation remain below for
+reference. Do not follow its Vercel deployment instructions for the current
+Ocusell AWS runtime.
+
+## Ocusell AWS direction
+
+`RemoteBrowserRunner` is an in-progress HTTP transport for an authenticated,
+Ocusell-hosted browser runner. It is not yet a published or production-wired
+replacement for the upstream `AgentBrowser` API. Track its compatibility with
+the runner API before adopting it in another service.
+
+For the deployed system and operations instructions, see:
+
+- [`ocusellinc/agent-runtime`](https://github.com/ocusellinc/agent-runtime)
+- [`ocusellinc/browser-runner`](https://github.com/ocusellinc/browser-runner)
+
+---
+
+# Upstream remote-agent-browser documentation
 
 Run [agent-browser](https://github.com/vercel-labs/agent-browser) in the cloud
 with an isolated [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox).
