@@ -1,6 +1,6 @@
 # remote-agent-browser (Ocusell fork)
 
-> **Current status:** the production Assurance runtime does not depend on this
+> **Current status:** the production Aria runtime does not depend on this
 > package. It uses the sibling `agent-runtime` and `browser-runner` services on
 > AWS. This fork is retained to develop a reusable remote command-runner client
 > without Vercel Sandbox as a future option.
